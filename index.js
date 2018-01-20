@@ -15,11 +15,11 @@ module.exports = class VinylPress {
     assert.ok(require(path.join(process.cwd(), config.defaultLayout)), 'Site needs a default layout')
     assert.ok(Array.isArray(config.stylesheets), 'Site needs a list of stylesheets')
     config.stylesheets.forEach(function (styleUrl) {
-      assert.equal(typeof config.styleUrl, 'string', 'Style URL needs to be a string')
+      assert.equal(typeof styleUrl, 'string', 'Style URL needs to be a string')
     })
     assert.ok(Array.isArray(config.scripts), 'Site needs a list of scripts')
     config.scripts.forEach(function (scriptUrl) {
-      assert.equal(typeof config.scriptUrl, 'string', 'Script URL needs to be a string')
+      assert.equal(typeof scriptUrl, 'string', 'Script URL needs to be a string')
     })
 
     this.config = config
