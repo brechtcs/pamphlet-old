@@ -25,7 +25,7 @@ module.exports = class VinylPress {
     this.config = config
   }
 
-  init (config) {
+  static init (config) {
     return new VinylPress(config)
   }
 
