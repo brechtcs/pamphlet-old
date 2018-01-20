@@ -18,5 +18,14 @@
     "standard": "^10.0.3",
     "tape": "^4.8.0",
     "vinyl-fs": "^3.0.1"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/pamphlets/vinyl-press/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pamphlets/vinyl-press"
+  },
+  "author": "Brecht Savelkoul <brecht@pamphlets.me>",
+  "license": "Apache-2.0"
 }
