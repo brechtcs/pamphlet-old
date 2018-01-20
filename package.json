@@ -1,6 +1,6 @@
 {
   "name": "vinyl-press",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "scripts": {
     "test": "standard && rimraf ./test/site && tape test && serve ./test/site"
   },
