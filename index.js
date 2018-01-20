@@ -36,7 +36,7 @@ module.exports = class VinylPress {
       var parsed = pbox.parse(doc.contents.toString(), {
         content: content => content.map(section => marked(section)).join('<hr>'),
         date: date => new Date(date),
-        permalink: permalink => permalink || path.basename(doc.path, '.md')
+        permalink: permalink => '/' + (permalink || path.basename(doc.path, '.md'))
       })
 
       if (!opts.concat && !opts.sort) {
@@ -56,24 +56,25 @@ module.exports = class VinylPress {
   }
 
   toAtom (filename) {
-    return through.obj(function (doc, encoding, cb) {
+    var press = this
+
+    return through.obj(function (doc, _enc, cb) {
       var content, updated
       var posts = JSON.parse(doc.contents.toString())
 
       if (Array.isArray(posts)) {
-        content = posts.map(atom.entry).join('\n')
-        updated = posts.reduce(function (post, last) {
-          var date = new Date(post.date)
-          if (!last || (date > last)) {
-            return date
+        posts = posts.map(function (post, last) {
+          post.date = new Date(post.date)
+          if (!updated || (post.date > updated)) {
+            updated = post.date
           }
-          return last
-        }, null)
+          return atom.entry(press.config, post)
+        })
       } else {
         throw new TypeError('Atom feed can only be generated from a list')
       }
       filename = filename || doc.path.replace(/\.json$/, '.atom')
-      cb(null, vinyl(filename, atom.feed(content, updated)))
+      cb(null, vinyl(filename, atom.feed(press.config, content, updated)))
     })
   }
 
