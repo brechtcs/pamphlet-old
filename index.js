@@ -106,7 +106,7 @@ module.exports = class VinylPress {
   layout (post) {
     var layout = path.join(process.cwd(), post.layout || this.config.defaultLayout)
     delete require.cache[layout]
-    return require(layout)(post)
+    return require(layout)(post, this.config)
   }
 
   target (post, file) {
