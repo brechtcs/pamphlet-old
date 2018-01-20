@@ -21,13 +21,13 @@ class VinylPress {
       var parsed = pbox.parse(doc.contents.toString(), {
         content: content => content.map(section => marked(section)).join('<hr>'),
         date: date => new Date(date),
-        permalink: permalink => permalink ? permalink : path.basename(doc.path, '.md')
+        permalink: permalink => permalink || path.basename(doc.path, '.md')
       })
 
       if (!opts.concat && !opts.sort) {
-        return cb(null, vinyl(doc.path, stringify(parsed)))
+        return cb(null, vinyl(doc.path.replace(/\.md$/, 'json'), stringify(parsed)))
       }
-      collected = collected.concat(parsed)
+      parsed.forEach(post => collected.push(post))
       cb()
     }, function (cb) {
       if (!collected.length) {
