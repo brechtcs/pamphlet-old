@@ -1,6 +1,5 @@
 var assert = require('assert')
 var atom = require('./lib/atom')
-var fs = require('fs')
 var html = require('./lib/html')
 var marked = require('marked')
 var path = require('path')
@@ -10,9 +9,10 @@ var vinyl = require('./lib/vinyl')
 
 module.exports = class VinylPress {
   constructor (config) {
+    assert.equal(typeof config.name, 'string', 'Site needs a name')
     assert.equal(typeof config.baseUrl, 'string', 'Site needs a base URL')
     assert.equal(typeof config.feedUrl, 'string', 'Site needs a feed URL')
-    assert.ok(fs.existsSync(config.defaultLayout), 'Site needs a default layout')
+    assert.ok(require(path.join(process.cwd(), config.defaultLayout)), 'Site needs a default layout')
     assert.ok(Array.isArray(config.stylesheets), 'Site needs a list of stylesheets')
     config.stylesheets.forEach(function (styleUrl) {
       assert.equal(typeof config.styleUrl, 'string', 'Style URL needs to be a string')
@@ -33,14 +33,18 @@ module.exports = class VinylPress {
     var stringify = (data) => JSON.stringify(data, opts.replacer, opts.space)
 
     return through.obj(function (doc, _enc, cb) {
-      var parsed = pbox.parse(doc.contents.toString(), {
+      var props = {
         content: content => content.map(section => marked(section)).join('<hr>'),
         date: date => new Date(date),
         permalink: permalink => '/' + (permalink || path.basename(doc.path, '.md'))
+      }
+
+      var parsed = pbox.parse(doc.contents.toString(), {
+        props: Object.assign(props, opts.props)
       })
 
       if (!opts.concat && !opts.sort) {
-        return cb(null, vinyl(doc.path.replace(/\.md$/, 'json'), stringify(parsed)))
+        return cb(null, vinyl(doc.path.replace(/\.md$/, '.json'), stringify(parsed)))
       }
       parsed.forEach(post => collected.push(post))
       cb()
@@ -63,7 +67,7 @@ module.exports = class VinylPress {
       var posts = JSON.parse(doc.contents.toString())
 
       if (Array.isArray(posts)) {
-        posts = posts.map(function (post, last) {
+        content = posts.map(function (post, last) {
           post.date = new Date(post.date)
           if (!updated || (post.date > updated)) {
             updated = post.date
@@ -79,6 +83,9 @@ module.exports = class VinylPress {
   }
 
   toHtml (filename, data) {
+    if (!data) {
+      data = {}
+    }
     var press = this
 
     return through.obj(function (doc, _enc, cb) {
@@ -86,19 +93,26 @@ module.exports = class VinylPress {
       var posts = JSON.parse(doc.contents.toString())
 
       if (posts.length > 1) {
-        content = posts.map(press.layout).join('\n')
+        content = posts.map(press.layout.bind(press)).join('\n')
       } else {
         data = Object.assign(data, posts[0])
         content = press.layout(data)
       }
-      file = filename || path.join(data.permalink || path.basename(doc.path, path.extname(doc.path)), 'index.html')
+      file = filename || path.join(press.target(data, doc), 'index.html')
       cb(null, vinyl(file, html.page(press.config, data, content)))
     })
   }
 
   layout (post) {
     var layout = path.join(process.cwd(), post.layout || this.config.defaultLayout)
-    delete require.cache(layout)
+    delete require.cache[layout]
     return require(layout)(post)
+  }
+
+  target (post, file) {
+    if (post.permalink) {
+      return post.permalink.replace(/^\//, '')
+    }
+    return path.basename(file.path, path.extname(file.path))
   }
 }

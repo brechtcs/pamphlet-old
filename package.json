@@ -2,7 +2,7 @@
   "name": "vinyl-press",
   "version": "0.0.1",
   "scripts": {
-    "test": "standard"
+    "test": "standard && rimraf ./test/site && tape test && serve ./test/site"
   },
   "dependencies": {
     "bel": "^5.1.5",
@@ -13,7 +13,10 @@
     "vinyl": "^2.1.0"
   },
   "devDependencies": {
+    "rimraf": "^2.6.2",
+    "serve": "^6.4.8",
     "standard": "^10.0.3",
-    "tape": "^4.8.0"
+    "tape": "^4.8.0",
+    "vinyl-fs": "^3.0.1"
   }
 }
