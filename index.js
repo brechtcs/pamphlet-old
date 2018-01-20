@@ -25,6 +25,10 @@ module.exports = class VinylPress {
     this.config = config
   }
 
+  init (config) {
+    return new VinylPress(config)
+  }
+
   fromFile (opts) {
     if (!opts) {
       opts = {}
